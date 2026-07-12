@@ -6,7 +6,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* Unga CSS code ellam ippadiye irukum... No changes here */
-body { font-family: 'Poppins', Arial, sans-serif; margin: 20px; display: flex; gap: 20px; background: #ffffff; color: #000000; }
+body { font-family: 'Poppins', Arial, sans-serif; margin: 20px; display: flex; gap: 20px; background: #ffffff; color: #000000;align-items:flex-start;
+    flex-wrap:wrap; }
 .form-container { flex: 1; display: flex; flex-direction: column; gap: 20px; max-height: 90vh; overflow-y: auto; padding: 20px; background: #004b8d; border-radius: 16px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); }
 .id-form h3 { margin-bottom: 8px; color: #f4bd58; font-weight: 600; }
 input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; box-sizing: border-box; border: none; border-radius: 8px; background: #f4bd58; color: #000000; font-size: 15px; transition: all 0.3s ease; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); }
@@ -22,6 +23,71 @@ textarea { height: 80px; resize: none; }
 .btn { padding: 12px 18px; background: #f4bd58; color: #000000; border: none; cursor: pointer; border-radius: 8px; font-size: 15px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
 .btn:hover { background: #e0a93f; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); }
 label { color: #f4bd58; font-weight: 500; }
+  /* =========================
+   MOBILE RESPONSIVE
+========================= */
+@media screen and (max-width:768px){
+
+body{
+    margin:0;
+    padding:15px;
+    flex-direction:column;
+    overflow-x:hidden;
+    gap:20px;
+}
+
+/* Form */
+.form-container{
+    width:100%;
+    max-height:none;
+    overflow:visible;
+    padding:15px;
+    box-sizing:border-box;
+}
+
+/* Preview */
+.preview-container{
+    width:100%;
+    flex:unset;
+    position:static;
+    padding:15px;
+    box-sizing:border-box;
+}
+
+/* ID Card */
+.flip-card{
+    width:250px;
+    height:398px;
+    margin:auto;
+}
+
+.flip-inner canvas{
+    width:250px;
+    height:398px;
+}
+
+/* Inputs */
+input,
+textarea{
+    font-size:16px;
+}
+
+/* Buttons */
+.btn{
+    width:100%;
+    max-width:260px;
+    font-size:16px;
+    padding:12px;
+}
+
+.preview-container a{
+    text-decoration:none;
+}
+
+h3{
+    font-size:22px;
+}
+}
 </style>
 </head>
 
@@ -55,7 +121,7 @@ label { color: #f4bd58; font-weight: 500; }
   <button class="btn" onclick="swapPreview()">Swap</button>
   <button class="btn" onclick="downloadPDF()">Download PDF</button>
 
-  <a href="index.html?roll=910423104030" class="btn">Back to Dashboard</a>
+  <a id="backBtn" href="#" class="btn">Back to Dashboard</a>
   </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -70,7 +136,11 @@ function swapPreview(){ flipCard.classList.toggle("show-back"); }
 async function downloadPDF(){ /* ... */ }
 document.querySelectorAll('input,textarea').forEach(el=>{ el.addEventListener('input',()=>{ drawFront(); drawBack(); }); });
 window.onload = () => { drawFront(); drawBack(); };
+const roll = new URLSearchParams(window.location.search).get("roll");
 
+if (roll) {
+    document.getElementById("backBtn").href = `index.html?roll=${roll}`;
+}
 // Copying your full functions to be safe
 function drawFront(callback){
   const canvas = document.getElementById("idCanvas"); const ctx = canvas.getContext("2d"); ctx.clearRect(0,0,637,1012); if(template.complete) ctx.drawImage(template,0,0,637,1012); ctx.font="500 27pt Roboto"; ctx.fillStyle="#2140b8"; ctx.fillText(document.getElementById("name").value,230,761); ctx.fillText(document.getElementById("branch").value,230,811); ctx.fillText(document.getElementById("rollno").value,230,861);
