@@ -7,7 +7,8 @@
 <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
 <style>
 /* 🌼 Fullscreen background */
-body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Poppins', Arial, Helvetica, sans-serif; background: #ffffff; color: #000000; }
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow-x: hidden;
+    overflow-y: auto; font-family: 'Poppins', Arial, Helvetica, sans-serif; background: #ffffff; color: #000000; }
 #particles-js { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
 /* Center container */
 .centered { display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; }
@@ -27,12 +28,61 @@ input { width: 100%; padding: 8px; border-radius: 8px; border: 2px solid #f4bd58
 /* 🖤 Buttons */
 button { margin-top: 16px; width: 100%; padding: 10px; border-radius: 8px; background: #f4bd58; color: #000000; border: none; font-weight: 600; cursor: pointer; }
 /* Dashboard Buttons */
-.dash-buttons { display: flex; flex-direction: column; gap: 15px; width: 450px; margin: auto; font-weight: bold;}
+.dash-buttons { display: flex; flex-direction: column; gap: 15px; width: 90%;
+    max-width: 450px; margin: auto; font-weight: bold;}
 .logout { background: #c0392b; color: #ffffff; font-weight: bold;}
 .hidden { display: none; }
 #welcome { 
   color: #004b8d;
   margin-top: 90px;}
+  /* Mobile Responsive */
+@media (max-width: 768px) {
+
+  .login-wrapper {
+    flex-direction: column;
+    gap: 20px;
+    padding: 15px;
+  }
+
+  .card {
+    width: 90%;
+    max-width: 320px;
+    padding: 20px;
+  }
+
+  .centered {
+    justify-content: flex-start;
+    padding-top: 40px;
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  h2 {
+    font-size: 28px;
+  }
+
+  label {
+    font-size: 16px;
+  }
+
+  input,
+  button {
+    font-size: 16px;
+  }
+
+  .dash-buttons {
+    width: 90%;
+    max-width: 350px;
+  }
+
+  #welcome,
+  #staffWelcome {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 32px;
+  }
+}
 </style>
 </head>
 
