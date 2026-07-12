@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>College Leave Letter Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  /* General Page Setup */
+  body { font-family: 'Poppins', Arial, sans-serif; background: #ffffff; margin: 0; padding: 20px; color: #000000; }
+  h2 { text-align: center; color: #004b8d; }
+  .main { display: flex; justify-content: center; gap: 25px; flex-wrap: wrap; }
+  .container, .preview { width: 45%; min-width: 400px; background: #004b8d; padding: 25px; border-radius: 16px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15); }
+  label { font-weight: 600; display: block; margin-top: 12px; color: #f4bd58; }
+  input, textarea { width: 100%; padding: 8px; margin-top: 6px; box-sizing: border-box; border-radius: 8px; border: none; background: #f4bd58; color: #000000; font-size: 15px; outline: none; transition: all 0.3s ease; }
+  input:hover, textarea:hover, input:focus, textarea:focus { background: #e0a93f; box-shadow: 0 0 6px rgba(0, 0, 0, 0.25); }
+  button { margin-top: 10px; margin-right: 10px; background: #f4bd58; color: #000000; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
+  button:hover { background: #e0a93f; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); }
+  .preview { white-space: pre-line; color: #ffffff; }
+</style>
+</head>
+<body>
+
+<h2>College Leave Letter Generator</h2>
+
+<div class="main">
+  <!-- Input Section -->
+  <div class="container">
+    <label>Your Name:</label>
+    <input type="text" id="name" oninput="generateLetter()">
+    <label>Year and Department:</label>
+    <input type="text" id="dept" oninput="generateLetter()">
+    <label>Register Number:</label>
+    <input type="number" id="regno" oninput="generateLetter()">
+    <label>Class In-Charge Name:</label>
+    <input type="text" id="incharge" oninput="generateLetter()">
+    <label>Department Name:</label>
+    <input type="text" id="deptName" oninput="generateLetter()">
+    <label>Date (DD/MM/YYYY):</label>
+    <input type="date" id="date" oninput="generateLetter()">
+    <label>Leave Date (Start):</label>
+    <input type="text" id="startDate" oninput="generateLetter()">
+    <label>Leave Date (End) <small>(optional)</small>:</label>
+    <input type="text" id="endDate" oninput="generateLetter()">
+    <label>Reason:</label>
+    <textarea id="reason" rows="2" oninput="generateLetter()"></textarea>
+
+    <div>
+        <button onclick="downloadPDF()">Download PDF</button>
+        <button style="background:#25D366" onclick="shareWhatsApp()">Share via WhatsApp</button>
+        <!-- ========================================================== -->
+        <!-- --- PUDHU BACK BUTTON INGE ADD PANNIRUKEN --- -->
+        <a id="backLink" style="text-decoration:none;">
+            <button style="background: #6c757d; color: white;">Back to Dashboard</button>
+        </a>
+        <!-- ========================================================== -->
+    </div>
+  </div>
+
+  <!-- Live Preview Section -->
+  <div class="preview" id="output">
+    <p style="text-align:center; color:#ddd;">Preview will appear here...</p>
+  </div>
+</div>
+
+<script>
+const college = "Fatima Michael College of Engg. & Tech.";
+const city = "Senkottai Village, Madurai - Sivagangai Main Road, \nMadurai - 625 020";
+
+function generateLetter() {
+  const name = document.getElementById("name").value;
+  const dept = document.getElementById("dept").value;
+  const regno = document.getElementById("regno").value;
+  const incharge = document.getElementById("incharge").value;
+  const deptName = document.getElementById("deptName").value;
+  const date = document.getElementById("date").value;
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
+  const reason = document.getElementById("reason").value;
+
+  if (!name && !dept && !regno && !startDate && !reason) {
+    document.getElementById("output").innerHTML = `<p style="text-align:center; color:#ddd;">Preview will appear here...</p>`;
+    return;
+  }
+
+  let leaveLine = (endDate.trim() === "" || endDate === startDate)
+    ? `I am unable to attend classes on ${startDate || '(start date)'} due to ${reason || '(your reason)'}.`
+    : `I am unable to attend classes from ${startDate || '(start date)'} to ${endDate || '(end date)'} due to ${reason || '(your reason)'}.`;
+
+  const letter = `
+From:
+${name}
+${dept}
+${regno}
+${college}
+${city}
+
+To:
+${incharge}
+${deptName}
+${college}
+${city}
+
+Date: ${date}
+
+Subject: Request for Leave
+
+Respected Sir/Ma’am,
+
+I am ${name}, studying in ${dept} (Reg. No: ${regno}). ${leaveLine}
+
+I kindly request you to grant me permission to take leave for the mentioned period. I assure you that I will cover up the missed portions and assignments upon returning to class.
+
+Thanking you for your understanding and support.
+
+
+Yours obediently,
+${name}
+`;
+  document.getElementById("output").innerText = letter;
+}
+
+// ==========================================================
+// --- INTHA PUDHU FUNCTION-A PASTE PANNUNGA ---
+// ==========================================================
+async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+    const text = document.getElementById("output").innerText;
+
+    if (text.includes("Preview will appear here...")) {
+        alert("Please fill the form to generate the letter first!");
+        return;
+    }
+
+    const title = "Leave Letter";
+    const margin = 20;
+    const pageWidth = pdf.internal.pageSize.getWidth();
+
+    // --- Inga dhaan Title-ah add panrom ---
+    pdf.setFont("times", "bold");      // Font-a bold aakurom
+    pdf.setFontSize(16);               // Font size-a perusaakurom
+    pdf.setTextColor(0, 0, 0);         // Color-a black aakurom
+    pdf.text(title, pageWidth / 2, 20, { align: 'center' }); // Title-a page-ku center-la vekkirom
+
+    // --- Inga letter content-ah add panrom ---
+    pdf.setFont("times", "normal");    // Marubadiyum font-a normal aakurom
+    pdf.setFontSize(12);
+    const lines = pdf.splitTextToSize(text, 170);
+    pdf.text(lines, margin, 40);       // Title-ku keela irundhu letter-a start panrom (30 la irundhu 40 a maathirukom)
+
+    pdf.save("Leave_Letter.pdf");
+}
+
+function shareWhatsApp() {
+  const text = document.getElementById("output").innerText.trim();
+  if (text.includes("Preview will appear here...")) {
+    alert("Please fill the form to generate the letter first!");
+    return;
+  }
+  const encodedText = encodeURIComponent(text);
+  const url = `https://wa.me/?text=${encodedText}`;
+  window.open(url, "_blank");
+}
+
+// ==========================================================
+// --- INTHA SCRIPT PUDHUSA ADD PANNIRUKEN ---
+window.addEventListener('load', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const roll = urlParams.get('roll');
+    const backButtonLink = document.getElementById('backLink');
+    
+    if (roll) {
+        backButtonLink.href = `interface.html?roll=${roll}`;
+    } else {
+        // Fallback in case roll number isn't passed correctly
+        backButtonLink.href = 'interface.html'; 
+    }
+});
+// ==========================================================
+
+// Initial call to set placeholder if needed
+generateLetter();
+</script>
+
+</body>
+</html>
