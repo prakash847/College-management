@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Internal Mark Calculation</title>
+<style>
+body { font-family: 'Poppins', Arial, sans-serif; margin: 30px; background: #ffffff; color: #000000; }
+h2 { text-align: center; color: #004b8d; font-weight: 600; margin-bottom: 20px; }
+.nameListBox { margin-bottom: 20px; }
+.nameListBox textarea { width: 100%; height: 100px; padding: 10px; font-size: 14px; border: none; border-radius: 8px; background: #f4bd58; color: #000000; transition: all 0.3s ease; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); }
+.nameListBox textarea:focus { background: #e0a93f; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); outline: none; }
+.subjectContainer { margin-bottom: 40px; position: relative; padding: 20px 10px 10px 10px; border-radius: 16px; background: #004b8d; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); color: #ffffff; }
+.removeBtn { position: absolute; top: -15px; right: -10px; background: #f4bd58; color: #000000; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; }
+.removeBtn:hover { background: #e0a93f; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); }
+.topBar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.topLeft { display: flex; align-items: center; gap: 10px; }
+.topLeft label { font-weight: bold; color: #f4bd58; }
+input.subjectInput { width: 200px; padding: 8px; border: none; border-radius: 8px; background: #f4bd58; color: #000000; transition: all 0.3s ease; box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); }
+input.subjectInput:focus { background: #e0a93f; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25); outline: none; }
+button { background: #f4bd58; border: none; color: #000000; padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); }
+button:hover { background: #e0a93f; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); }
+.addSubjectEnd { background: #f4bd58; }
+.addSubjectEnd:hover { background: #e0a93f; }
+.topControls { margin-bottom: 15px; text-align: center; }
+.topControls label { font-weight: bold; color: #ffffff; margin-right: 5px; }
+input.totalPeriodsInput { width: 60px; text-align: center; border: none; border-radius: 8px; background: #f4bd58; color: #000000; transition: all 0.3s ease; }
+input.totalPeriodsInput:focus { background: #e0a93f; outline: none; }
+table { width: 100%; border-collapse: collapse; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); margin-bottom: 10px; }
+th, td { padding: 10px; border: 1px solid #ddd; text-align: center; font-size: 14px; color: #000000; }
+th { background-color: #004b8d; color: #ffffff; }
+td.total, td.periodPercent { font-weight: bold; color: #000000; }
+input { width: 70px; text-align: center; border: none; border-radius: 8px; background: #f4bd58; color: #000000; transition: all 0.3s ease; }
+input:focus { background: #e0a93f; outline: none; }
+.subjectSummary { margin-top: 10px; font-weight: bold; color: #ffffff; text-align: right; }
+#summaryTable { margin-top: 20px; width: 80%; margin-left: auto; margin-right: auto; }
+#downloadAll, #downloadTotals { margin-right: 10px; }
+</style>
+</head>
+<body>
+
+<h2>Internal Mark Calculation</h2>
+
+<div class="nameListBox">
+  <label><b>Class Name List (one per line):</b></label><br>
+  <textarea id="nameList" placeholder="Enter student names here..."></textarea>
+</div>
+
+<div id="subjectsArea"></div>
+
+<div style="text-align:center; margin-top:20px;">
+  <button id="downloadAll">📄 Download All Subjects (Full)</button>
+  <button id="downloadTotals" style="background:#28a745;">📊 Download Totals Only</button>
+</div>
+
+<div style="text-align:center; margin-top:20px;">
+    <a href="index.html?user=staff" style="text-decoration:none;">
+        <button style="background: #6c757d; color: white;">⬅️ Back to Dashboard</button>
+    </a>
+</div>
+
+<div id="summaryChartContainer" style="margin-top:40px; text-align:center;">
+  <h3>Pass Percentage Summary</h3>
+  <canvas id="passChart" style="max-width:520px; max-height:720px;"></canvas><br>
+  <button id="downloadChart" style="background:#17a2b8;">📊 Download Chart</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+<script>
+const { jsPDF } = window.jspdf;
+let subjectCount = 0;
+let chartInstance;
+
+// ---------------- Create Subject ----------------
+function createSubject(insertAfter = null) {
+  subjectCount++;
+  const div = document.createElement("div");
+  div.className = "subjectContainer";
+  div.innerHTML = `${subjectCount > 1 ? '<button class="removeBtn">X</button>' : ''}
+  <div class="topBar">
+    <div class="topLeft">
+      <label>Subject Name:</label>
+      <input type="text" class="subjectInput" placeholder="Enter Subject Name">
+    </div>
+    <div class="buttons">
+      <button class="downloadPDF">📄 Download</button>
+    </div>
+  </div>
+  <div class="topControls">
+    <label>Total Periods</label>
+    <input type="number" class="totalPeriodsInput" min="1" value="20">
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>S.No</th><th>Name</th><th>Internal (60)</th><th>Test (20)</th><th>Assignment (40)</th><th>Select Periods (out of 20)</th><th>Attendance %</th><th>Total (100)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div class="subjectSummary">Pass: 0 | Fail: 0 | Pass %: 0%</div>
+  <button class="addSubjectEnd">➕ Add Subject</button>`;
+
+  if (insertAfter) insertAfter.after(div); else document.getElementById("subjectsArea").appendChild(div);
+
+  if(div.querySelector(".removeBtn"))
+    div.querySelector(".removeBtn").addEventListener("click", ()=> { div.remove(); updatePassFailChart(); });
+
+  div.querySelector(".addSubjectEnd").addEventListener("click", ()=> createSubject(div));
+  div.querySelector(".subjectInput").addEventListener("input", updatePassFailChart);
+
+  setupTable(div);
+  updateAllTables();
+}
+
+// ---------------- Name List ----------------
+function getNameList() {
+  const raw = document.getElementById("nameList").value.trim();
+  return raw ? raw.split("\n").map(n=>n.trim()).filter(n=>n) : [];
+}
+
+// ---------------- Update Tables ----------------
+function updateAllTables() {
+  const names = getNameList();
+  document.querySelectorAll(".subjectContainer").forEach(container => {
+    const tbody = container.querySelector("tbody");
+    const diff = names.length - tbody.rows.length;
+    if(diff>0){
+      for(let i=tbody.rows.length;i<names.length;i++){
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${i+1}</td><td>${names[i]}</td>
+        <td><input type="number" min="0" max="60" class="internal"></td>
+        <td><input type="number" min="0" max="20" class="test"></td>
+        <td><input type="number" min="0" max="40" class="assign"></td>
+        <td><input type="number" min="0" class="periodInput"></td>
+        <td class="periodPercent">-</td>
+        <td class="total">-</td>`;
+        tbody.appendChild(row);
+      }
+    } else if(diff<0){
+      for(let i=tbody.rows.length-1;i>=names.length;i--) tbody.deleteRow(i);
+    }
+    for(let i=0;i<names.length;i++){
+      tbody.rows[i].cells[0].textContent=i+1;
+      tbody.rows[i].cells[1].textContent=names[i];
+    }
+    updateSubjectSummary(container);
+  });
+  updatePassFailChart();
+}
+
+// ---------------- Setup Table ----------------
+function setupTable(container){
+  const table = container.querySelector("table");
+  const tbody = table.querySelector("tbody");
+  const totalPeriodsInput = container.querySelector(".totalPeriodsInput");
+  const periodTh = table.querySelector("th:nth-child(6)");
+
+  totalPeriodsInput.addEventListener("input", ()=>{
+    const total = parseFloat(totalPeriodsInput.value) || 20;
+    periodTh.textContent = `Select Periods (out of ${total})`;
+    tbody.querySelectorAll('tr').forEach(row=>{ row.querySelector('.periodInput').dispatchEvent(new Event('input',{bubbles:true})); });
+  });
+
+  tbody.addEventListener("input", e=>{
+    if(e.target.tagName!=="INPUT") return;
+    const row = e.target.closest("tr");
+    const totalTd = row.querySelector(".total");
+    const percentTd = row.querySelector(".periodPercent");
+    const internal = limit(row.querySelector(".internal"),60);
+    const test = limit(row.querySelector(".test"),20);
+    const assign = limit(row.querySelector(".assign"),40);
+    const totalPeriods = parseFloat(totalPeriodsInput.value)||20;
+    const periodVal = parseFloat(row.querySelector(".periodInput").value);
+
+    const total = (internal/60*40)+test+assign;
+    if(total){ totalTd.textContent=total.toFixed(2); totalTd.style.color = total<50?'red':'black'; }
+    else{ totalTd.textContent="-"; totalTd.style.color='black'; }
+
+    if(!isNaN(periodVal)&&periodVal>=0){
+      if(periodVal<=totalPeriods){
+        const attendancePercent = (periodVal/totalPeriods)*100;
+        percentTd.textContent=attendancePercent.toFixed(2)+"%";
+        percentTd.style.color=attendancePercent<75?'red':'black';
+      } else { alert(`Periods cannot exceed ${totalPeriods}`); e.target.value=""; percentTd.textContent="-"; percentTd.style.color='black'; }
+    } else { percentTd.textContent="-"; percentTd.style.color='black'; }
+
+    updateSubjectSummary(container);
+    updatePassFailChart();
+  });
+
+  // Arrow Key Navigation
+  tbody.addEventListener('keydown', e=>{
+    const key=e.key;
+    const target=e.target;
+    if(target.tagName!=='INPUT' || !['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(key)) return;
+
+    e.preventDefault();
+    const currentTd = target.closest('td');
+    const currentRow = target.closest('tr');
+    const allRows = Array.from(tbody.querySelectorAll('tr'));
+    const rowIndex = allRows.indexOf(currentRow);
+    const cellIndex = Array.from(currentRow.cells).indexOf(currentTd);
+
+    if(key==='ArrowDown'){
+      const nextRow = allRows[rowIndex+1];
+      if(nextRow){
+        const input = nextRow.cells[cellIndex]?.querySelector('input');
+        if(input) input.focus();
+      }
+    }
+    if(key==='ArrowUp'){
+      const prevRow = allRows[rowIndex-1];
+      if(prevRow){
+        const input = prevRow.cells[cellIndex]?.querySelector('input');
+        if(input) input.focus();
+      }
+    }
+    if(key==='ArrowRight'){
+      const inputs = Array.from(currentRow.querySelectorAll('input'));
+      const nextInput = inputs[inputs.indexOf(target)+1];
+      if(nextInput) nextInput.focus();
+    }
+    if(key==='ArrowLeft'){
+      const inputs = Array.from(currentRow.querySelectorAll('input'));
+      const prevInput = inputs[inputs.indexOf(target)-1];
+      if(prevInput) prevInput.focus();
+    }
+  });
+
+  container.querySelector(".downloadPDF").addEventListener("click",()=>downloadSinglePDF(container));
+}
+
+// ---------------- Utility Functions ----------------
+function limit(input,max){
+  const v=parseFloat(input.value);
+  if(isNaN(v)) return 0;
+  if(v<0||v>max){ alert(`Value must be 0-${max}`); input.value=""; return 0; }
+  return v;
+}
+
+function updateSubjectSummary(container){
+  const rows=container.querySelectorAll("table tbody tr");
+  const summaryDiv=container.querySelector(".subjectSummary");
+  let pass=0, fail=0;
+  rows.forEach(r=>{
+    const total=parseFloat(r.querySelector(".total").textContent);
+    if(!isNaN(total)) total>=50?pass++:fail++;
+  });
+  const totalStudents = rows.length;
+  const passPercent = totalStudents?((pass/totalStudents)*100).toFixed(2):0;
+  summaryDiv.textContent=`Pass: ${pass} | Fail: ${fail} | Pass %: ${passPercent}%`;
+}
+
+function cloneForPDF(container){
+  const clone=container.cloneNode(true);
+  clone.querySelector('.topBar')?.remove();
+  clone.querySelector('.topControls')?.remove();
+  clone.querySelector('.removeBtn')?.remove();
+  clone.querySelector('.addSubjectEnd')?.remove();
+  clone.querySelectorAll("input").forEach(input=>{
+    const span=document.createElement("span");
+    span.textContent=input.value||"-";
+    input.parentNode.replaceChild(span,input);
+  });
+  return clone;
+}
+
+// ---------------- Download Functions ----------------
+async function downloadSinglePDF(container){
+  const subjectName = container.querySelector(".subjectInput").value||"Subject";
+  const tempDiv = document.createElement("div"); tempDiv.style.padding="20px";
+  tempDiv.appendChild(cloneForPDF(container));
+  document.body.appendChild(tempDiv);
+  const canvas = await html2canvas(tempDiv,{scale:1.2});
+  document.body.removeChild(tempDiv);
+  const imgData = canvas.toDataURL("image/jpeg",0.5);
+  const pdf = new jsPDF('p','mm','a4');
+  const width = 190;
+  const height = canvas.height*width/canvas.width;
+  pdf.setFont("helvetica","bold");
+  pdf.text("Internal Marks Report",105,15,{align:"center"});
+  pdf.setFont("helvetica","normal");
+  pdf.text(subjectName,105,22,{align:"center"});
+  pdf.addImage(imgData,'JPEG',10,30,width,height);
+  pdf.save(`${subjectName}_Report.pdf`);
+}
+
+// ---------------- Event Listeners ----------------
+document.getElementById("downloadAll").addEventListener("click", async ()=>{
+  const subjects = [...document.querySelectorAll(".subjectContainer")];
+  if(subjects.length===0) return alert("Please add subjects!");
+  const pdf = new jsPDF('p','mm','a4');
+  for(let i=0;i<subjects.length;i++){
+    const container=subjects[i];
+    const tempDiv=document.createElement("div"); tempDiv.style.padding="20px";
+    tempDiv.appendChild(cloneForPDF(container));
+    document.body.appendChild(tempDiv);
+    const canvas = await html2canvas(tempDiv,{scale:1.2});
+    document.body.removeChild(tempDiv);
+    const imgData = canvas.toDataURL("image/jpeg",0.5);
+    const pageWidth = pdf.internal.pageSize.getWidth()-20;
+    const pageHeight = canvas.height*pageWidth/canvas.width;
+    if(i>0) pdf.addPage();
+    const subjectName = container.querySelector(".subjectInput").value||"Subject";
+    pdf.setFont("helvetica","bold");
+    pdf.text("Internal Marks Report",pdf.internal.pageSize.getWidth()/2,15,{align:"center"});
+    pdf.setFont("helvetica","normal");
+    pdf.text(subjectName,pdf.internal.pageSize.getWidth()/2,22,{align:"center"});
+    pdf.addImage(imgData,'JPEG',10,30,pageWidth,pageHeight);
+  }
+  pdf.save("All_Subjects_Reports.pdf");
+});
+
+document.getElementById("downloadTotals").addEventListener("click", async () => {
+  const names = getNameList();
+  if (names.length === 0) return alert("Please enter student names first!");
+  const subjects = [...document.querySelectorAll(".subjectContainer")];
+  if (subjects.length === 0) return alert("Please add subjects!");
+  const summaryTable = document.createElement("table");
+  summaryTable.id = "summaryTable";
+  const thead = document.createElement("thead");
+  const headRow = document.createElement("tr");
+
+  // MODIFICATION 1: Added <th>S.No</th> to the header
+  headRow.innerHTML = `<th>S.No</th><th>Name</th>` + subjects.map(s => `<th>${s.querySelector(".subjectInput").value || "Subject"}</th>`).join("");
+
+  thead.appendChild(headRow);
+  summaryTable.appendChild(thead);
+  const tbody = document.createElement("tbody");
+  names.forEach((name, i) => {
+    const row = document.createElement("tr");
+
+    // MODIFICATION 2: Added the serial number cell `<td>${i + 1}</td>`
+    let cells = `<td>${i + 1}</td><td>${name}</td>`;
+
+    subjects.forEach(s => {
+      const table = s.querySelector("table");
+      const tr = table.querySelectorAll("tbody tr")[i];
+      const total = tr ? tr.querySelector(".total").textContent : "-";
+      const totalVal = parseFloat(total);
+      const style = (!isNaN(totalVal) && totalVal < 50) ? 'style="color:red;"' : '';
+      cells += `<td ${style}>${total}</td>`;
+    });
+    row.innerHTML = cells;
+    tbody.appendChild(row);
+  });
+  summaryTable.appendChild(tbody);
+  const tempDiv = document.createElement("div");
+  const tempStyle = document.createElement('style');
+  tempStyle.innerHTML = `
+      #summaryTable { width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; }
+      #summaryTable th, #summaryTable td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+      #summaryTable th { background-color: #007bff; color: white; }
+  `;
+  tempDiv.appendChild(tempStyle);
+  tempDiv.appendChild(summaryTable);
+  document.body.appendChild(tempDiv);
+  const canvas = await html2canvas(tempDiv, { scale: 1.2 });
+  document.body.removeChild(tempDiv);
+  const img = canvas.toDataURL("image/jpeg", 0.5);
+  const pdf = new jsPDF('l', 'mm', 'a4');
+  pdf.text("TOTAL MARKS SUMMARY", 150, 15, { align: "center" });
+  const width = 270;
+  const height = canvas.height * width / canvas.width;
+  pdf.addImage(img, 'JPEG', 15, 25, width, height);
+  pdf.save("Total_Marks_Summary.pdf");
+});
+// ✅ FIXED: Chart Download Handler — placed outside other listeners
+document.getElementById('downloadChart').addEventListener('click', () => {
+    const canvas = document.getElementById('passChart');
+
+    if (!chartInstance || !canvas) {
+        alert("The chart is not available to download!");
+        return;
+    }
+
+    const imgData = canvas.toDataURL('image/png', 1.0); // Use higher quality for better rendering
+
+    const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+    });
+
+    // --- PDF Page and Margin Setup ---
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 15; // Left, right, bottom margin
+    const topMarginWithTitle = 35; // Space from top for titles and spacing
+
+    // --- Add Titles ---
+    pdf.setFontSize(16);
+    pdf.text("Pass Percentage Summary Chart", pageW / 2, 15, { align: 'center' });
+
+    const subjectNames = chartInstance.data.labels.join(', ');
+
+    // ✅ FIX 1: Set font to BOLD for the subject names
+    pdf.setFontSize(10);
+    pdf.setFont(undefined, 'bold'); // Set font style to bold
+    pdf.text(`Subjects: ${subjectNames}`, pageW / 2, 22, { align: 'center' });
+    pdf.setFont(undefined, 'normal'); // Reset to normal for any text that might come after
+
+    // ✅ FIX 2: Calculate image size correctly to fit on the page
+    const canvasAspectRatio = canvas.width / canvas.height;
+
+    // Calculate the maximum width and height the image can have on the page
+    const maxWidth = pageW - (margin * 2);
+    const maxHeight = pageH - topMarginWithTitle - margin;
+
+    let imgWidth = maxWidth;
+    let imgHeight = imgWidth / canvasAspectRatio;
+
+    // If the calculated height is too tall, recalculate based on max height
+    if (imgHeight > maxHeight) {
+        imgHeight = maxHeight;
+        imgWidth = imgHeight * canvasAspectRatio;
+    }
+
+    // Center the image horizontally
+    const xPos = (pageW - imgWidth) / 2;
+
+    // Add the scaled image to the PDF
+    pdf.addImage(imgData, 'PNG', xPos, topMarginWithTitle, imgWidth, imgHeight);
+
+    const date = new Date().toISOString().split('T')[0];
+    pdf.save(`PassChart_${date}.pdf`);
+});
+
+// ---------------- Update Chart ----------------
+function updatePassFailChart(){
+  const subjects = [];
+  const passRates = [];
+  document.querySelectorAll(".subjectContainer").forEach(container=>{
+    const name=container.querySelector(".subjectInput").value||`Subject ${subjects.length+1}`;
+    const summary = container.querySelector(".subjectSummary").textContent.match(/\d+(\.\d+)?/g);
+    const passPercent = summary?parseFloat(summary[2]):0;
+    subjects.push(name);
+    passRates.push(passPercent);
+  });
+  const ctx=document.getElementById("passChart").getContext("2d");
+  if(chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx,{
+    type:'bar',
+    data:{ labels:subjects, datasets:[{ label:'Pass %', data:passRates, backgroundColor:'#f4bd58' }] },
+    options:{
+      plugins:{
+        legend:{display:false},
+        datalabels:{anchor:'end',align:'top',color:'black',font:{weight:'bold'},formatter:v=>v+"%"}
+      },
+      scales:{y:{beginAtZero:true,max:100}}
+    },
+    plugins:[ChartDataLabels]
+  });
+}
+
+// ---------------- Init ----------------
+document.getElementById("nameList").addEventListener("input", updateAllTables);
+createSubject();
+</script>
+</body>
+</html>

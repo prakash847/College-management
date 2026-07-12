@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ID Card Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Unga CSS code ellam ippadiye irukum... No changes here */
+body { font-family: 'Poppins', Arial, sans-serif; margin: 20px; display: flex; gap: 20px; background: #ffffff; color: #000000; }
+.form-container { flex: 1; display: flex; flex-direction: column; gap: 20px; max-height: 90vh; overflow-y: auto; padding: 20px; background: #004b8d; border-radius: 16px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); }
+.id-form h3 { margin-bottom: 8px; color: #f4bd58; font-weight: 600; }
+input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; box-sizing: border-box; border: none; border-radius: 8px; background: #f4bd58; color: #000000; font-size: 15px; transition: all 0.3s ease; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); }
+input::placeholder, textarea::placeholder { color: #000000; opacity: 0.8; }
+input:focus, textarea:focus { background-color: #e0a93f; box-shadow: 0 0 8px rgba(0, 0, 0, 0.25); outline: none; }
+textarea { height: 80px; resize: none; }
+.preview-container { flex: 0 0 350px; display: flex; flex-direction: column; align-items: center; gap: 12px; position: sticky; top: 20px; padding: 15px; background: #004b8d; border-radius: 16px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); }
+.flip-card { width: 318px; height: 506px; perspective: 1000px; position: relative; }
+.flip-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.8s ease; border-radius: 10px; }
+.flip-card.show-back .flip-inner { transform: rotateY(180deg); }
+.flip-inner canvas { position: absolute; width: 100%; height: 100%; border-radius: 10px; backface-visibility: hidden; border: 1px solid #000000; box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2); }
+#idBackCanvas { transform: rotateY(180deg); }
+.btn { padding: 12px 18px; background: #f4bd58; color: #000000; border: none; cursor: pointer; border-radius: 8px; font-size: 15px; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
+.btn:hover { background: #e0a93f; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); }
+label { color: #f4bd58; font-weight: 500; }
+</style>
+</head>
+
+<body>
+
+<div class="form-container">
+  <div class="id-form">
+    <h3>Front Details</h3>
+    <input type="text" id="name" placeholder="Enter Name">
+    <input type="text" id="branch" placeholder="Enter Branch">
+    <input type="text" id="rollno" placeholder="Enter Roll No">
+    <input type="file" id="photo" accept="image/*">
+  </div>
+  <div class="id-form">
+    <h3>Back Details (Click Swap)</h3>
+    <input type="text" id="year" placeholder="Enter Year">
+    <input type="text" id="blood" placeholder="Enter Blood Group">
+    <input type="text" id="dob" placeholder="Enter Date of Birth">
+    <textarea id="address" placeholder="Enter Address (multi-line)"></textarea>
+    <input type="text" id="cell" placeholder="Enter Cell No">
+  </div>
+</div>
+
+<div class="preview-container">
+  <div class="flip-card" id="flipCard">
+    <div class="flip-inner">
+      <canvas id="idCanvas" width="637" height="1012"></canvas>
+      <canvas id="idBackCanvas" width="637" height="1012"></canvas>
+    </div>
+  </div>
+  <button class="btn" onclick="swapPreview()">Swap</button>
+  <button class="btn" onclick="downloadPDF()">Download PDF</button>
+
+  <a href="index.html?roll=910423104030" class="btn">Back to Dashboard</a>
+  </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// Unga JavaScript code ellam ippadiye irukum... No changes here
+const template = new Image(); template.src = "FMCET ID(Front).png";
+const backTemplate = new Image(); backTemplate.src = "FMCET ID(BACK).png";
+function drawFront(callback){ /* ... */ }
+function drawBack(){ /* ... */ }
+const flipCard=document.getElementById("flipCard");
+function swapPreview(){ flipCard.classList.toggle("show-back"); }
+async function downloadPDF(){ /* ... */ }
+document.querySelectorAll('input,textarea').forEach(el=>{ el.addEventListener('input',()=>{ drawFront(); drawBack(); }); });
+window.onload = () => { drawFront(); drawBack(); };
+
+// Copying your full functions to be safe
+function drawFront(callback){
+  const canvas = document.getElementById("idCanvas"); const ctx = canvas.getContext("2d"); ctx.clearRect(0,0,637,1012); if(template.complete) ctx.drawImage(template,0,0,637,1012); ctx.font="500 27pt Roboto"; ctx.fillStyle="#2140b8"; ctx.fillText(document.getElementById("name").value,230,761); ctx.fillText(document.getElementById("branch").value,230,811); ctx.fillText(document.getElementById("rollno").value,230,861);
+  const photoInput = document.getElementById("photo").files[0];
+  if(photoInput){ const reader = new FileReader(); reader.onload = e=>{ const img = new Image(); img.onload=()=>{ ctx.save(); ctx.beginPath(); ctx.arc(318,508,190,0,Math.PI*2); ctx.closePath(); ctx.clip(); ctx.drawImage(img,130,320,379,379); ctx.restore(); if(callback) callback(); }; img.src = e.target.result; }; reader.readAsDataURL(photoInput); } else if(callback) callback();
+}
+function drawBack(){
+  const canvas=document.getElementById("idBackCanvas"); const ctx=canvas.getContext("2d"); ctx.clearRect(0,0,637,1012); if(backTemplate.complete) ctx.drawImage(backTemplate,0,0,637,1012); ctx.font="500 27pt Roboto"; ctx.fillStyle="black"; ctx.fillText(document.getElementById("year").value,300,121); ctx.fillText(document.getElementById("blood").value,300,180); ctx.fillText(document.getElementById("dob").value,300,241); let y=355; document.getElementById("address").value.split("\n").forEach(line=>{ ctx.fillText(line,30,y); y+=55; }); ctx.fillText(document.getElementById("cell").value,120,583.5);
+}
+async function downloadPDF(){
+  drawBack(); drawFront(()=>{ const { jsPDF } = window.jspdf; const pdf = new jsPDF({orientation:'portrait',unit:'px',format:[637,1012]}); pdf.addImage(document.getElementById("idCanvas").toDataURL('image/png'),'PNG',0,0,637,1012); pdf.addPage(); pdf.addImage(document.getElementById("idBackCanvas").toDataURL('image/png'),'PNG',0,0,637,1012); pdf.save("id_card.pdf"); });
+}
+</script>
+</body>
+</html>
