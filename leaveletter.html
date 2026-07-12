@@ -17,6 +17,51 @@
   button { margin-top: 10px; margin-right: 10px; background: #f4bd58; color: #000000; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
   button:hover { background: #e0a93f; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25); }
   .preview { white-space: pre-line; color: #ffffff; }
+  /* ================= MOBILE ================= */
+@media (max-width:768px){
+
+body{
+    padding:15px;
+}
+
+.main{
+    flex-direction:column;
+    gap:20px;
+}
+
+.container,
+.preview{
+    width:100%;
+    min-width:unset;
+    padding:18px;
+    box-sizing:border-box;
+}
+
+input,
+textarea{
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    margin:8px 0;
+}
+
+h2{
+    font-size:26px;
+}
+}
+  .back-btn{
+    display:block;
+    text-align:center;
+    background:#6c757d;
+    color:white;
+    padding:10px;
+    border-radius:8px;
+    text-decoration:none;
+    margin-top:10px;
+    font-weight:bold;
+}
 </style>
 </head>
 <body>
@@ -50,9 +95,7 @@
         <button style="background:#25D366" onclick="shareWhatsApp()">Share via WhatsApp</button>
         <!-- ========================================================== -->
         <!-- --- PUDHU BACK BUTTON INGE ADD PANNIRUKEN --- -->
-        <a id="backLink" style="text-decoration:none;">
-            <button style="background: #6c757d; color: white;">Back to Dashboard</button>
-        </a>
+        <a id="backLink" class="back-btn">Back to Dashboard</a>
         <!-- ========================================================== -->
     </div>
   </div>
