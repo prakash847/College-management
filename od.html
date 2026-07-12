@@ -15,6 +15,60 @@
   input, textarea { width: 100%; padding: 8px; margin-top: 6px; box-sizing: border-box; border-radius: 8px; border: none; background: #f4bd58; color: #000000; font-size: 15px; outline: none; }
   button { margin-top: 10px; margin-right: 10px; background: #f4bd58; color: #000000; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; }
   .preview { white-space: pre-line; color: #ffffff; }
+  /* ==========================
+   MOBILE RESPONSIVE
+========================== */
+@media screen and (max-width:768px){
+
+body{
+    padding:15px;
+}
+
+.main{
+    flex-direction:column;
+    gap:20px;
+}
+
+.container,
+.preview{
+    width:100%;
+    min-width:unset;
+    padding:18px;
+    box-sizing:border-box;
+}
+
+input,
+textarea{
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    margin:8px 0;
+}
+
+.preview{
+    white-space:pre-wrap;
+    word-break:break-word;
+}
+
+h2{
+    font-size:26px;
+}
+}
+  .back-btn{
+    display:block;
+    width:100%;
+    text-align:center;
+    background:#6c757d;
+    color:#fff;
+    text-decoration:none;
+    padding:12px;
+    border-radius:8px;
+    font-weight:600;
+    box-sizing:border-box;
+    margin-top:8px;
+}
 </style>
 </head>
 <body>
@@ -45,9 +99,7 @@
     <div>
         <button onclick="downloadPDF()">Download PDF</button>
         <button style="background:#25D366" onclick="shareWhatsApp()">Share via WhatsApp</button>
-        <a id="backLink" style="text-decoration:none;">
-            <button style="background: #6c757d; color: white;">Back to Dashboard</button>
-        </a>
+        <a id="backLink" class="back-btn">Back to Dashboard</a>
         </div>
   </div>
 
