@@ -86,12 +86,33 @@ h2{
     text-align:left;
 }
 
-table{
-    display:block;
+.subjectContainer{
     overflow-x:auto;
-    white-space:nowrap;
 }
 
+table{
+    width:max-content;
+    min-width:100%;
+    border-collapse:collapse;
+}
+
+.subjectContainer::-webkit-scrollbar{
+    height:8px;
+}
+th,
+td{
+    min-width:110px;
+}
+
+th:first-child,
+td:first-child{
+    min-width:60px;
+}
+
+th:nth-child(2),
+td:nth-child(2){
+    min-width:160px;
+}
 th,
 td{
     font-size:13px;
