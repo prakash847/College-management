@@ -35,6 +35,108 @@ input:focus { background: #e0a93f; outline: none; }
 .subjectSummary { margin-top: 10px; font-weight: bold; color: #ffffff; text-align: right; }
 #summaryTable { margin-top: 20px; width: 80%; margin-left: auto; margin-right: auto; }
 #downloadAll, #downloadTotals { margin-right: 10px; }
+  /* ==========================
+   MOBILE RESPONSIVE
+========================== */
+@media screen and (max-width:768px){
+
+body{
+    margin:0;
+    padding:15px;
+}
+
+h2{
+    font-size:24px;
+}
+
+.nameListBox textarea{
+    height:120px;
+}
+
+.subjectContainer{
+    padding:15px;
+    overflow-x:auto;
+}
+
+.topBar{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:12px;
+}
+
+.topLeft{
+    width:100%;
+    flex-direction:column;
+    align-items:flex-start;
+}
+
+.subjectInput{
+    width:100% !important;
+}
+
+.buttons{
+    width:100%;
+}
+
+.buttons button{
+    width:100%;
+}
+
+.topControls{
+    text-align:left;
+}
+
+table{
+    display:block;
+    overflow-x:auto;
+    white-space:nowrap;
+}
+
+th,
+td{
+    font-size:13px;
+    padding:8px;
+}
+
+input{
+    width:60px;
+}
+
+#summaryTable{
+    width:100%;
+}
+
+#downloadAll,
+#downloadTotals,
+#downloadChart{
+    width:100%;
+    margin:8px 0;
+}
+
+.removeBtn{
+    top:5px;
+    right:5px;
+}
+
+canvas{
+    width:100% !important;
+    height:auto !important;
+}
+}
+  .back-btn{
+    display:block;
+    width:100%;
+    max-width:300px;
+    margin:15px auto;
+    padding:12px;
+    background:#6c757d;
+    color:#fff;
+    text-align:center;
+    text-decoration:none;
+    border-radius:8px;
+    font-weight:bold;
+    box-sizing:border-box;
+}
 </style>
 </head>
 <body>
@@ -54,9 +156,7 @@ input:focus { background: #e0a93f; outline: none; }
 </div>
 
 <div style="text-align:center; margin-top:20px;">
-    <a href="index.html?user=staff" style="text-decoration:none;">
-        <button style="background: #6c757d; color: white;">⬅️ Back to Dashboard</button>
-    </a>
+    <a href="index.html?user=staff" class="back-btn">⬅️ Back to Dashboard</a>
 </div>
 
 <div id="summaryChartContainer" style="margin-top:40px; text-align:center;">
